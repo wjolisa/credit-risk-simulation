@@ -1,6 +1,6 @@
 # Credit Risk Simulation: Sampling Error vs. Model Error
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/YOUR-USERNAME/credit-risk-simulation/blob/main/credit_risk_simulation.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wjolisa/credit-risk-simulation/blob/main/credit_risk_simulation.ipynb)
 
 Monte Carlo simulation of a corporate bond portfolio's one-year loss distribution under a
 CreditMetrics-style latent Gaussian credit-migration model, used to separate two sources of error in a
