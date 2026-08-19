@@ -98,6 +98,40 @@ questions, and stability alone does not decide between them.
 
 ![In-sample distributions](figures/in_sample_distributions.png)
 
+## A defect worth recording
+
+An earlier working version of this simulation produced a plausible loss distribution that was wrong in
+two ways at once, both traceable to a single off-by-one in how the credit-driver column was read.
+
+The `driver` column in `instrum_data.csv` is 1-based (1–50), but it was used directly as a NumPy index:
+
+```python
+credit_driver = int(driver[i])
+if credit_driver != 50:
+    w = beta[i] * y_array[s, credit_driver] + np.sqrt(1 - beta[i]**2) * z_array[i]
+```
+
+Two consequences:
+
+1. **Every counterparty was loaded onto the wrong systemic driver** — the one after its own. Betas,
+   thresholds and exposures were all correct, so each counterparty's marginal loss distribution was
+   right; only the correlation structure was scrambled, and the tail of a credit portfolio is exactly
+   what that structure determines.
+2. **The two counterparties on driver 50 were dropped entirely.** Index 50 is out of range for a
+   50-driver array, so the guard skipped them, leaving their loss identically zero across all 100,000
+   scenarios — 1.34% of portfolio value silently absent from every number the model reported.
+
+Neither failure raises an error, and neither produces a visibly odd histogram. The fix is to convert
+the column once, at the point of reading, and to assert the range rather than route around it:
+
+```python
+driver = raw[:, 1].astype(int) - 1        # file is 1-based, numpy is 0-based
+assert driver.min() >= 0 and driver.max() < len(rho), "credit-driver index out of range"
+```
+
+The guard against an out-of-range index is the tell: when a bounds error is handled by excluding the
+offending rows, the model keeps running and the exclusion never appears in the output.
+
 ## Running it
 
 Everything lives in one notebook.
